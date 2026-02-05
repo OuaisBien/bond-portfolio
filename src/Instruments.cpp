@@ -1,12 +1,12 @@
 #include "Instruments.hpp"
 #include <vector>
 
-// =========================================================
-// Vanilla Bond Implementation
+
+// Vanilla Bond
 // =========================================================
 
-VanillaBond::VanillaBond(double n, double m, double c, int f)
-    : Bond(n, m), couponRate(c), frequency(f) {}
+VanillaBond::VanillaBond(std::string id, double n, double m, double c, int f)
+    : Bond(id, n, m), couponRate(c), frequency(f) {}
 
 std::vector<CashFlow> VanillaBond::getCashFlows(const YieldCurve & /*curve*/) const
 {
@@ -37,16 +37,16 @@ std::vector<CashFlow> VanillaBond::getCashFlows(const YieldCurve & /*curve*/) co
     return flows;
 }
 
-std::string VanillaBond::getName() const
+std::string VanillaBond::getDescription() const
 {
-    return "Vanilla Bond";
+    return "Vanilla Bond " + std::to_string(couponRate * 100) + "%";
 }
 
-// =========================================================
-// Zero Coupon Bond Implementation
+
+// Zero Coupon Bond
 // =========================================================
 
-ZeroCouponBond::ZeroCouponBond(double n, double m) : Bond(n, m) {}
+ZeroCouponBond::ZeroCouponBond(std::string id, double n, double m) : Bond(id, n, m) {}
 
 std::vector<CashFlow> ZeroCouponBond::getCashFlows(const YieldCurve & /*curve*/) const
 {
@@ -54,17 +54,17 @@ std::vector<CashFlow> ZeroCouponBond::getCashFlows(const YieldCurve & /*curve*/)
     return {{notional, maturity}};
 }
 
-std::string ZeroCouponBond::getName() const
+std::string ZeroCouponBond::getDescription() const
 {
     return "Zero Coupon";
 }
 
-// =========================================================
-// Floating Rate Note (FRN) Implementation
+
+// Floating Rate Note
 // =========================================================
 
-FloatingRateNote::FloatingRateNote(double n, double m, double s, int f)
-    : Bond(n, m), spread(s), frequency(f) {}
+FloatingRateNote::FloatingRateNote(std::string id, double n, double m, double s, int f)
+    : Bond(id, n, m), spread(s), frequency(f) {}
 
 std::vector<CashFlow> FloatingRateNote::getCashFlows(const YieldCurve &curve) const
 {
@@ -92,7 +92,7 @@ std::vector<CashFlow> FloatingRateNote::getCashFlows(const YieldCurve &curve) co
     return flows;
 }
 
-std::string FloatingRateNote::getName() const
+std::string FloatingRateNote::getDescription() const
 {
     return "Floating Rate Note";
 }
