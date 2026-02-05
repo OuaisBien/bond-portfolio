@@ -1,19 +1,29 @@
-#include "Bond.hpp"
-#include <iostream> 
+#pragma once
+#include "YieldCurve.hpp"
+#include <vector>
+#include <string>
 
-// Constructor implementation
-Bond::Bond(double n, double m) : notional(n), maturity(m) {}
+struct CashFlow {
+    double amount;
+    double time;
+};
 
-// The Pricing Engine Logic
-double Bond::calculatePrice(const YieldCurve& curve) const {
-    double price = 0.0;
+class Bond {
+protected:
+    std::string ticker; // Unique identifier
+    double notional;
+    double maturity;
+
+public:
+    Bond(std::string id, double n, double m);
+    virtual ~Bond() = default;
+
+    virtual std::vector<CashFlow> getCashFlows(const YieldCurve& curve) const = 0;
     
-    auto flows = getCashFlows(curve);
+    // Defined in .cpp or inline here if it's very short
+    double calculatePrice(const YieldCurve& curve) const;
 
-    for (const auto& cf : flows) {
-        // PV = CashFlow * e^(-r*t)
-        price += cf.amount * curve.getDiscountFactor(cf.time);
-    }
+    std::string getTicker() const { return ticker; }
 
-    return price;
-}
+    virtual std::string getDescription() const = 0;
+};
