@@ -46,7 +46,7 @@ void RiskEngine::runStressTest(const std::vector<std::unique_ptr<Bond>>& portfol
         totalBaseVal += pBase;
         totalStressedVal += pStress;
 
-        std::cout << std::left << std::setw(20) << bond->getName() 
+        std::cout << std::left << std::setw(20) << bond->getDescription() 
                   << std::right << std::fixed << std::setprecision(2) 
                   << std::setw(12) << pBase 
                   << std::setw(12) << pStress 
