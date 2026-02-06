@@ -10,11 +10,13 @@ include_directories(include)
 
 # Define the source files
 set(SOURCES
-    src/main.cpp
+    src/main4.cpp
     src/YieldCurve.cpp
     src/Bond.cpp
     src/Instruments.cpp
     src/RiskEngine.cpp
+    src/TradingBook.cpp
+    src/PortfolioGenerator.cpp
 )
 
 # Create the executable
