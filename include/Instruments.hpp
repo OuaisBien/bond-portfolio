@@ -8,14 +8,14 @@ private:
 public:
     VanillaBond(double n, double m, double c, int f);
     std::vector<CashFlow> getCashFlows(const YieldCurve& curve) const override;
-    std::string getName() const override;
+    std::string getDescription() const override;
 };
 
 class ZeroCouponBond : public Bond {
 public:
     ZeroCouponBond(double n, double m);
     std::vector<CashFlow> getCashFlows(const YieldCurve& curve) const override;
-    std::string getName() const override;
+    std::string getDescription() const override;
     
 };
 
@@ -27,5 +27,5 @@ private:
 public:
     FloatingRateNote(double n, double m, double s, int f);
     std::vector<CashFlow> getCashFlows(const YieldCurve &curve) const override;
-    std::string getName() const override;
+    std::string getDescription() const override;
 };
