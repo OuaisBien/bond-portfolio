@@ -48,9 +48,7 @@ double Position::getMarketValue(const YieldCurve& market) const {
     // Price is typically per 100 or per 1 unit. Assuming price is percentage (e.g. 1.02 for 102%) 
     // or absolute (102). Let's assume price is absolute for 1 unit of notional.
     // If price is 100.00 and Quantity is 1000, MV is 100,000.
-    // NOTE: Check your pricing formula. If calculatePrice returns ~1000 for 1000 notional, 
-    // then we just scale by (Quantity / Notional_of_Bond_Def).
-    // Let's assume calculatePrice returns the value of 1 unit of Bond.
+    // Assume calculatePrice returns the value of 1 unit of Bond.
     
     // Since our bond class calculates price for its internal notional, 
     // we need to scale it to the position quantity.
@@ -59,8 +57,7 @@ double Position::getMarketValue(const YieldCurve& market) const {
     // Hack for this example: Assume Bond definition has Notional 100.0
     // and Position Quantity is total face value.
     // Ideally, bond.calculatePrice() should return % of par, but currently it returns absolute cash.
-    
-    // We will assume quantity is "Number of Bonds" for simplicity here.
+
     return quantity * instrument->calculatePrice(market); 
 }
 
@@ -80,6 +77,16 @@ double Position::getUnrealizedPnL(const YieldCurve& market) const {
 // TradingBook Logic
 // =======================
 
+double TradingBook::getPosition(const std::string &ticker) const
+{
+    auto it = positions.find(ticker);
+    if (it != positions.end())
+    {
+        return it->second.quantity;
+    }
+    return 0.0;
+}
+
 void TradingBook::addKnownInstrument(std::shared_ptr<Bond> bond) {
     // Create an empty position for this bond
     if (positions.find(bond->getTicker()) == positions.end())
@@ -89,16 +96,40 @@ void TradingBook::addKnownInstrument(std::shared_ptr<Bond> bond) {
     }
 }
 
-void TradingBook::bookTrade(const Trade& trade) {
+void TradingBook::bookTrade(const Trade &trade, double midPrice) {
     auto it = positions.find(trade.bondName);
-    if (it != positions.end()) {
-        it->second.addTrade(trade);
-        std::cout << "[TRADE] " << (trade.quantity > 0 ? "BUY " : "SELL ") 
-                  << std::abs(trade.quantity) << " of " << trade.bondName 
-                  << " @ " << trade.price << std::endl;
-    } else {
-        std::cerr << "Error: Unknown instrument " << trade.bondName << std::endl;
+    if (it == positions.end())
+    {
+        std::cerr << "Error: Bond not found." << std::endl;
+        return;
     }
+
+    // 1. Calculate
+    double edgeCaptured = 0.0;
+
+    if (trade.quantity > 0)
+    {
+        // Client sells
+        // Edge = Mid - PricePaid
+        edgeCaptured = (midPrice - trade.price) * trade.quantity;
+    }
+    else
+    {
+        // Client buys
+        // Edge = PriceReceived - Mid
+        // Note: quantity is negative
+        edgeCaptured = (trade.price - midPrice) * std::abs(trade.quantity);
+    }
+
+    // 3. Update Metrics
+    realizedSpreadPnL += edgeCaptured;
+    it->second.addTrade(trade); // Accounting update
+
+    std::cout << "[TRADE] " << (trade.quantity > 0 ? "BUY " : "SELL ")
+            << std::abs(trade.quantity) << " of " << trade.bondName
+            << " @ " << trade.price
+            << " (Mid: " << midPrice << ")"
+            << " | Edge Captured: " << edgeCaptured << std::endl;
 }
 
 void TradingBook::printRiskReport(const YieldCurve& market) const {
